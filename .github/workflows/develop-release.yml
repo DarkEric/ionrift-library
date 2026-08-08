@@ -81,9 +81,11 @@ jobs:
           **Foundry install / update URL:**
           \`https://github.com/${GITHUB_REPOSITORY}/releases/download/develop/module.json\`"
           gh release delete develop --yes || true
+          git tag -d develop || true
           git push origin :refs/tags/develop || true
           gh release create develop \
             --prerelease \
+            --target "$GITHUB_SHA" \
             --title "Develop (${GITHUB_SHA:0:7})" \
             --notes "$NOTES" \
             module.json module.zip
