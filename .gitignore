@@ -56,3 +56,7 @@ ionrift-brand/
 test_imports.ps1
 
 .worktrees/
+
+.build/
+packs/.ci-build/
+

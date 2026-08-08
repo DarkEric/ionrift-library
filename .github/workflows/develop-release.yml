@@ -1,0 +1,89 @@
+name: Develop Rolling Release
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+concurrency:
+  group: develop-release-${{ github.repository }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+      - name: Compile packs
+        run: |
+          if [ -d packs/src ] && [ -f .github/scripts/compile-packs.mjs ]; then
+            node .github/scripts/compile-packs.mjs
+          else
+            echo "No packs/src — skip compile"
+          fi
+
+      - name: Stamp develop manifest
+        run: node .github/scripts/stamp-develop-manifest.mjs
+
+      - name: Stage stamped module.json
+        run: cp .build/module.json module.json
+
+      - name: Zip module
+        run: |
+          zip -r module.zip . \
+            -x ".git/*" \
+            -x ".github/*" \
+            -x ".gitignore" \
+            -x ".gitattributes" \
+            -x ".cursor/*" \
+            -x "docs/superpowers/*" \
+            -x "tests/*" \
+            -x "scripts/tests/*" \
+            -x "node_modules/*" \
+            -x "packs/src/*" \
+            -x "packs/.validation-staging/*" \
+            -x "packs/SHIPPING.json" \
+            -x "packs/_built-*" \
+            -x ".build/*" \
+            -x "tools/*" \
+            -x "*.md" \
+            -x "package.json" \
+            -x "package-lock.json" \
+            -x "vitest.config.*" \
+            -x ".eslintrc*" \
+            -x "eslint.config.*" \
+            -x "module.zip"
+
+      - name: Publish develop prerelease
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          NOTES="Rolling develop build \`${GITHUB_SHA:0:7}\`.
+
+          **Foundry install / update URL:**
+          \`https://github.com/${GITHUB_REPOSITORY}/releases/download/develop/module.json\`"
+          gh release delete develop --yes || true
+          git push origin :refs/tags/develop || true
+          gh release create develop \
+            --prerelease \
+            --title "Develop (${GITHUB_SHA:0:7})" \
+            --notes "$NOTES" \
+            module.json module.zip
