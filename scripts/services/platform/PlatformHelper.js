@@ -122,25 +122,10 @@ export class PlatformHelper {
         const slash = normalized.lastIndexOf("/");
         if (slash < 0) return null;
 
-        const dir = normalized.substring(0, slash);
-        const fileName = normalized.substring(slash + 1);
-        const FP = this.FP;
-
-        // Skip browse-exists on Sqyre: browse omits fresh uploads.
-        if (FP && !this.isSqyre) {
-            try {
-                const browse = await FP.browse(this.fileSource, dir);
-                const files = browse.files ?? [];
-                const exists = files.some((filePath) => {
-                    const base = filePath.split("/").pop();
-                    return base === fileName || filePath.endsWith(`/${fileName}`);
-                });
-                if (!exists) return null;
-            } catch {
-                return null;
-            }
-        }
-
+        // Prefer a direct fetch. FilePicker.browse is unreliable for junction
+        // overlays and fresh uploads (Sqyre, Windows junctions under ionrift-data):
+        // a false "missing" here previously made overlay item materialisation
+        // yield empty world packs, so forage fell back to wilderness staples.
         try {
             const url = await this.resolveAssetUrl(normalized);
             const response = await fetch(url);

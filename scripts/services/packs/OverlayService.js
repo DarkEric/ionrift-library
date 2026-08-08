@@ -140,7 +140,10 @@ export class OverlayService {
     static async readFileIndex(moduleId, sublayer = LEGACY_PREMIUM_SUBLAYER) {
         const path = `${this.getOverlayPath(moduleId, sublayer)}/${this.FILE_INDEX_NAME}`;
         const data = await PlatformHelper.readDataJson(path);
-        return data && Array.isArray(data.files) ? data.files : null;
+        // Prefer `{ files: [...] }`; also accept a bare path array (campaign packs).
+        if (Array.isArray(data?.files)) return data.files;
+        if (Array.isArray(data)) return data;
+        return null;
     }
 
     static refresh() {

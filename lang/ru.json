@@ -36,6 +36,8 @@
   "IONRIFT.LIBRARY.SETTINGS.PartyRosterName": "Состав группы",
   "IONRIFT.LIBRARY.SETTINGS.PartyRosterLabel": "Редактировать состав",
   "IONRIFT.LIBRARY.SETTINGS.PartyRosterHint": "Выберите персонажей активной приключенческой группы. Используется модулями Respite, Workshop и другими.",
+  "IONRIFT.LIBRARY.SETTINGS.IncludeGmOwnedPartyMembersName": "Включать персонажей мастера в группу",
+  "IONRIFT.LIBRARY.SETTINGS.IncludeGmOwnedPartyMembersHint": "Только Foundry v14+. Вкл. — все участники Primary Party для Ionrift: персонажи игроков и НИПы (блок «Персонажи мастера» на листе группы), включая принадлежащих мастеру. Выкл. — только персонажи игроков (прежнее поведение).",
   "IONRIFT.LIBRARY.SETTINGS.LogicInspectorName": "Инспектор логики",
   "IONRIFT.LIBRARY.SETTINGS.LogicInspectorLabel": "Проверить логику",
   "IONRIFT.LIBRARY.PROFILES.Apply": "Применить",

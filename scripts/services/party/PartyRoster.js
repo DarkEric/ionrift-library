@@ -40,6 +40,46 @@ export class PartyRoster {
         return (game.release?.generation ?? 0) >= 14;
     }
 
+    /**
+     * True when GM-owned Primary Party characters should be included (v14+ setting).
+     * @returns {boolean}
+     */
+    static includeGmOwnedPartyMembers() {
+        if (!this.isV14()) return false;
+        try {
+            return !!game.settings.get(LIB_ID, "includeGmOwnedPartyMembers");
+        } catch {
+            return false;
+        }
+    }
+
+    /**
+     * Character members of a dnd5e group actor, honouring includeGmOwnedPartyMembers.
+     * @param {Actor|null|undefined} group
+     * @returns {Actor[]}
+     */
+    static _dnd5eGroupCharacters(group) {
+        if (!group?.system?.members) return [];
+        if (!this.includeGmOwnedPartyMembers()) {
+            const playerChars = group.system.playerCharacters;
+            if (playerChars?.length) return [...playerChars];
+        }
+        const includeGmOwned = this.includeGmOwnedPartyMembers();
+        const resolved = [];
+        for (const member of group.system.members) {
+            const actor = member?.actor ?? game.actors.get(
+                typeof member?.actor === "string" ? member.actor : member?.actor?.id
+            );
+            if (!actor) continue;
+            if (includeGmOwned) {
+                if (actor.type === "character" || actor.type === "npc") resolved.push(actor);
+            } else if (actor.system?.isCharacter) {
+                resolved.push(actor);
+            }
+        }
+        return resolved;
+    }
+
     static nativeMembers() {
         if (!this.isV14()) return null;
         const adapter = game.ionrift?.library?.system?.current;
@@ -156,9 +196,9 @@ export class PartyRoster {
 
         const primary = game.actors.party;
         const groups = game.actors.filter(a => a.type === "group");
-        const primaryPcCount = primary?.system?.playerCharacters?.length ?? 0;
+        const primaryPcCount = this._dnd5eGroupCharacters(primary).length;
         const alternateGroup = groups.find(
-            g => g.id !== primary?.id && (g.system?.playerCharacters?.length ?? 0) > 0
+            g => g.id !== primary?.id && this._dnd5eGroupCharacters(g).length > 0
         );
 
         if (emptyParty) {

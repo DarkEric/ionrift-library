@@ -184,15 +184,28 @@ export class DnD5eAdapter extends IonriftSystemAdapter {
         const extractMembers = (party) => {
             if (!party?.system?.members) return [];
 
-            const playerChars = party.system.playerCharacters;
-            if (playerChars?.length) return [...playerChars];
+            // Default (off): dnd5e playerCharacters — player-owned PCs only.
+            // On: all Primary Party creatures (PC + NPC), including GM-owned.
+            // Vehicles stay excluded. Balor/companions live in the NPC section of
+            // the group sheet ("Персонажи мастера") and fail isCharacter.
+            const includeGmOwned = !!game.ionrift?.library?.party?.includeGmOwnedPartyMembers?.();
+
+            if (!includeGmOwned) {
+                const playerChars = party.system.playerCharacters;
+                if (playerChars?.length) return [...playerChars];
+            }
 
             const resolved = [];
             for (const member of party.system.members) {
                 const actor = member?.actor ?? game.actors.get(
                     typeof member?.actor === "string" ? member.actor : member?.actor?.id
                 );
-                if (actor?.system?.isCharacter) resolved.push(actor);
+                if (!actor) continue;
+                if (includeGmOwned) {
+                    if (actor.type === "character" || actor.type === "npc") resolved.push(actor);
+                } else if (actor.system?.isCharacter) {
+                    resolved.push(actor);
+                }
             }
             return resolved;
         };

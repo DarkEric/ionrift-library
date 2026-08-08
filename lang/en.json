@@ -36,6 +36,8 @@
   "IONRIFT.LIBRARY.SETTINGS.PartyRosterName": "Party Roster",
   "IONRIFT.LIBRARY.SETTINGS.PartyRosterLabel": "Edit Roster",
   "IONRIFT.LIBRARY.SETTINGS.PartyRosterHint": "Choose which characters are in the active adventuring party. Used by Respite, Workshop, and other modules.",
+  "IONRIFT.LIBRARY.SETTINGS.IncludeGmOwnedPartyMembersName": "Include GM-owned party members",
+  "IONRIFT.LIBRARY.SETTINGS.IncludeGmOwnedPartyMembersHint": "Foundry v14+ only. When on, all Primary Party members count for Ionrift — player characters and NPCs (the group sheet “GM characters” section), including GM-owned. When off, only player-owned PCs (previous behaviour).",
   "IONRIFT.LIBRARY.SETTINGS.LogicInspectorName": "Logic Inspector",
   "IONRIFT.LIBRARY.SETTINGS.LogicInspectorLabel": "Inspect Logic",
   "IONRIFT.LIBRARY.PROFILES.Apply": "Apply",

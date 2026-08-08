@@ -254,11 +254,19 @@ export class OverlayItemMaterialiser {
         const existingHash = state[overlayId]?.packHashes?.[sublayer];
 
         const existing = game.packs.get(collection);
-        if (existing && existingHash === hashKey) {
+        const existingCount = existing?.index?.size ?? 0;
+        // Skip only when hash matches AND the pack actually has documents. An empty
+        // stub (failed write / interrupted create) must rebuild or forage stays empty.
+        if (existing && existingHash === hashKey && existingCount > 0) {
             Logger.log(this._label(config),
                 `OverlayItemMaterialiser | "${collection}" already at hash ${hashKey}; skipping.`
             );
-            return { collection, itemCount: existing.index?.size ?? 0, changed: false };
+            return { collection, itemCount: existingCount, changed: false };
+        }
+        if (existing && existingHash === hashKey && existingCount === 0) {
+            Logger.warn(this._label(config),
+                `OverlayItemMaterialiser | "${collection}" hash matches but pack is empty; rebuilding.`
+            );
         }
 
         if (existing) {

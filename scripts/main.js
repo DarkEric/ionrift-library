@@ -132,6 +132,24 @@ Hooks.once("init", () => {
         default: false
     });
 
+    // Foundry v14+ only: include GM-owned characters from dnd5e Primary Party.
+    // On earlier generations the setting stays registered but hidden from config.
+    game.settings.register(MODULE_ID, "includeGmOwnedPartyMembers", {
+        name: "IONRIFT.LIBRARY.SETTINGS.IncludeGmOwnedPartyMembersName",
+        hint: "IONRIFT.LIBRARY.SETTINGS.IncludeGmOwnedPartyMembersHint",
+        scope: "world",
+        config: (game.release?.generation ?? 0) >= 14,
+        type: Boolean,
+        default: false,
+        restricted: true,
+        onChange: () => {
+            try {
+                const members = game.ionrift?.library?.party?.getMembers?.() ?? [];
+                Hooks.callAll("ionrift.partyChanged", members);
+            } catch { /* party API not ready */ }
+        }
+    });
+
     game.settings.register(MODULE_ID, "overlayDistributionEnabled", {
         scope: "world",
         config: false,
